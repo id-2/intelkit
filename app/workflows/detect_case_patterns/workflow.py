@@ -1,13 +1,9 @@
 # Copyright (c) 2024 Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license. See LICENSE file in the project.
 #
-import io
 import os
 
 import altair as alt
-import numpy as np
-import pandas as pd
-import PIL
 import streamlit as st
 from st_aggrid import (
     AgGrid,
@@ -17,9 +13,10 @@ from st_aggrid import (
     GridUpdateMode,
 )
 
-import app.workflows.detect_case_patterns.variables as ap_variables
 import app.util.example_outputs_ui as example_outputs_ui
+import app.workflows.detect_case_patterns.variables as ap_variables
 from app.util import ui_components
+from app.util.save_session_state import load_session_state, save_session_state
 from toolkit.AI.classes import LLMCallback
 from toolkit.detect_case_patterns import prompts
 from toolkit.detect_case_patterns.config import (
@@ -88,14 +85,16 @@ def create(sv: ap_variables.SessionVariables, workflow):
                 for c in sv.detect_case_patterns_final_df.value.columns.to_numpy()
                 if c != "Subject ID"
             ]
-            sv.detect_case_patterns_time_col.value = st.selectbox(
+            time_col = st.selectbox(
                 "Period column",
                 options,
                 index=options.index(sv.detect_case_patterns_time_col.value)
                 if sv.detect_case_patterns_time_col.value in options
                 else 0,
             )
-            time_col = sv.detect_case_patterns_time_col.value
+            if time_col != sv.detect_case_patterns_time_col.value:
+                sv.detect_case_patterns_time_col.value = time_col
+                st.rerun()
             att_cols = [
                 col
                 for col in sv.detect_case_patterns_final_df.value.columns.to_numpy()
@@ -111,6 +110,12 @@ def create(sv: ap_variables.SessionVariables, workflow):
                     graph_df = sv.detect_case_patterns_final_df.value.copy(deep=True)
                     pdf = generate_graph_model(graph_df, time_col, type_val_sep)
                 sv.detect_case_patterns_dynamic_df.value = pdf
+                save_session_state(workflow)
+                st.rerun()
+
+            if st.button("Load state"):
+                load_session_state(workflow)
+                st.rerun()
             if ready and len(sv.detect_case_patterns_dynamic_df.value) > 0:
                 st.success(
                     f'Attribute model has **{len(sv.detect_case_patterns_dynamic_df.value)}** links spanning **{len(sv.detect_case_patterns_dynamic_df.value["Subject ID"].unique())}** cases, **{len(sv.detect_case_patterns_dynamic_df.value["Full Attribute"].unique())}** attributes, and **{len(sv.detect_case_patterns_dynamic_df.value["Period"].unique())}** periods.'
