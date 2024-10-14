@@ -31,7 +31,7 @@ def process_file_bytes(input_file_bytes, analysis_window_size: PeriodOption, cal
                 for index, text in enumerate(text_chunks):
                     label = f"{file_name}_{ix + 1}"
                     chunk = {"title": label, "text_chunk": text, "chunk_id": index + 1}
-                    text_to_chunks[label].append(dumps(chunk, indent=2))
+                    text_to_chunks[label].append(dumps(chunk, indent=2, ensure_ascii=False))
         else:
             if file_name.endswith(".pdf"):
                 page_texts = []
@@ -49,7 +49,7 @@ def process_file_bytes(input_file_bytes, analysis_window_size: PeriodOption, cal
                 text_chunks = splitter.split(doc_text)
                 for index, text in enumerate(text_chunks):
                     chunk = {"title": file_name, "text_chunk": text, "chunk_id": index + 1}
-                    text_chunks[index] = dumps(chunk, indent=2)
+                    text_chunks[index] = dumps(chunk, indent=2, ensure_ascii=False)
 
             text_to_chunks[file_name] = text_chunks
     return text_to_chunks
@@ -86,7 +86,7 @@ def process_json_text(text_json, period: PeriodOption):
             chunk_json["metadata"] = text_json["metadata"]
         chunk_json["chunk_id"] = cx + 1
         chunk_json["text_chunk"] = chunk
-        chunks.append(dumps(chunk_json, indent=2))
+        chunks.append(dumps(chunk_json, indent=2, ensure_ascii=False))
     return chunks
 
 def process_json_texts(file_to_text_jsons, period: PeriodOption):
@@ -153,15 +153,18 @@ def process_chunks(
         for period, count in period_counts.items():
             period_concept_graphs[period].add_edge(edge[0], edge[1], weight=count)
 
-    (
-        hierarchical_communities,
-        community_to_label
-    ) = graph_builder.prepare_concept_graphs(
-        period_concept_graphs,
-        max_cluster_size=max_cluster_size,
-        min_edge_weight=2,
-        min_node_degree=1
-    )
+    hierarchical_communities = {}
+    community_to_label = {}
+    if len(period_concept_graphs['ALL'].nodes()) > 0:
+        (
+            hierarchical_communities,
+            community_to_label
+        ) = graph_builder.prepare_concept_graphs(
+            period_concept_graphs,
+            max_cluster_size=max_cluster_size,
+            min_edge_weight=2,
+            min_node_degree=1
+        )
     return (
         cid_to_text,
         text_to_cid,
