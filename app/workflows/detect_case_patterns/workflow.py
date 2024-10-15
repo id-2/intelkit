@@ -80,6 +80,10 @@ def create(sv: ap_variables.SessionVariables, workflow):
                 sv.detect_case_patterns_final_df
             )
             sv.detect_case_patterns_final_df.value['Subject ID'] = range(len(sv.detect_case_patterns_final_df.value))
+            print(
+                "aaaaaaaaaaaa",
+                sv.detect_case_patterns_input_df.value.columns.to_numpy(),
+            )
             options = [""] + [
                 c
                 for c in sv.detect_case_patterns_final_df.value.columns.to_numpy()
@@ -116,6 +120,7 @@ def create(sv: ap_variables.SessionVariables, workflow):
             if st.button("Load state"):
                 load_session_state(workflow)
                 st.rerun()
+            print(sv.detect_case_patterns_input_df.value)
             if ready and len(sv.detect_case_patterns_dynamic_df.value) > 0:
                 st.success(
                     f'Attribute model has **{len(sv.detect_case_patterns_dynamic_df.value)}** links spanning **{len(sv.detect_case_patterns_dynamic_df.value["Subject ID"].unique())}** cases, **{len(sv.detect_case_patterns_dynamic_df.value["Full Attribute"].unique())}** attributes, and **{len(sv.detect_case_patterns_dynamic_df.value["Period"].unique())}** periods.'
