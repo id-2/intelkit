@@ -16,7 +16,10 @@ from st_aggrid import (
 import app.util.example_outputs_ui as example_outputs_ui
 import app.workflows.detect_case_patterns.variables as ap_variables
 from app.util import ui_components
-from app.util.save_session_state import load_session_state, save_session_state
+from app.util.save_session_state import (
+    load_session_state,
+    save_session_state,
+)
 from toolkit.AI.classes import LLMCallback
 from toolkit.detect_case_patterns import prompts
 from toolkit.detect_case_patterns.config import (
@@ -79,10 +82,8 @@ def create(sv: ap_variables.SessionVariables, workflow):
                 sv.detect_case_patterns_input_df,
                 sv.detect_case_patterns_final_df
             )
-            sv.detect_case_patterns_final_df.value['Subject ID'] = range(len(sv.detect_case_patterns_final_df.value))
-            print(
-                "aaaaaaaaaaaa",
-                sv.detect_case_patterns_input_df.value.columns.to_numpy(),
+            sv.detect_case_patterns_final_df.value["Subject ID"] = range(
+                len(sv.detect_case_patterns_final_df.value)
             )
             options = [""] + [
                 c
@@ -98,7 +99,7 @@ def create(sv: ap_variables.SessionVariables, workflow):
             )
             if time_col != sv.detect_case_patterns_time_col.value:
                 sv.detect_case_patterns_time_col.value = time_col
-                st.rerun()
+                # st.rerun()
             att_cols = [
                 col
                 for col in sv.detect_case_patterns_final_df.value.columns.to_numpy()
@@ -117,10 +118,10 @@ def create(sv: ap_variables.SessionVariables, workflow):
                 save_session_state(workflow)
                 st.rerun()
 
-            if st.button("Load state"):
+            if st.button("Load last state"):
                 load_session_state(workflow)
                 st.rerun()
-            print(sv.detect_case_patterns_input_df.value)
+
             if ready and len(sv.detect_case_patterns_dynamic_df.value) > 0:
                 st.success(
                     f'Attribute model has **{len(sv.detect_case_patterns_dynamic_df.value)}** links spanning **{len(sv.detect_case_patterns_dynamic_df.value["Subject ID"].unique())}** cases, **{len(sv.detect_case_patterns_dynamic_df.value["Full Attribute"].unique())}** attributes, and **{len(sv.detect_case_patterns_dynamic_df.value["Period"].unique())}** periods.'
@@ -218,6 +219,7 @@ def create(sv: ap_variables.SessionVariables, workflow):
                         progress_bar.progress(99, text="Finalizing...")
                         sv.detect_case_patterns_time_series_df.value = tdf
                         progress_bar.empty()
+                        save_session_state(workflow)
                         st.rerun()
             with b4:
                 st.download_button(
@@ -342,7 +344,6 @@ def create(sv: ap_variables.SessionVariables, workflow):
                         index=False
                     ),
                 }
-
                 generate, messages, reset = ui_components.generative_ai_component(
                     sv.detect_case_patterns_system_prompt, variables
                 )
@@ -386,14 +387,7 @@ def create(sv: ap_variables.SessionVariables, workflow):
                         )
 
                         sv.detect_case_patterns_report.value = result
-
-                        # validation, messages_to_llm = ui_components.validate_ai_report(
-                        #     messages, result
-                        # )
-                        # sv.detect_case_patterns_report_validation.value = validation
-                        # sv.detect_case_patterns_report_validation_messages.value = (
-                        #     messages_to_llm
-                        # )
+                        save_session_state(workflow)
                         st.rerun()
                     except Exception as _e:
                         empty_connection_bar()
