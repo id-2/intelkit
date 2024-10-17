@@ -1,8 +1,10 @@
 # Copyright (c) 2024 Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license. See LICENSE file in the project.
 
-import pandas as pd
 from collections import defaultdict
+
+import pandas as pd
+
 
 def get_data_schema(sdf) -> dict[list[str]]:
     data_schema = defaultdict(list)
@@ -159,6 +161,7 @@ def compute_top_attributes_query(
     # Add ID based on row number
     df["Id"] = [i for i in range(len(df))]
     sdf_filtered = df.melt(id_vars=["Id"], var_name="Attribute", value_name="Value")
+    sdf_filtered["Value"] = sdf_filtered["Value"].astype(str)
     sdf_filtered["AttributeValue"] = (
         sdf_filtered["Attribute"] + val_separator + sdf_filtered["Value"]
     )

@@ -1,10 +1,7 @@
 # Copyright (c) 2024 Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license. See LICENSE file in the project.
 #
-import math
 import os
-from collections import defaultdict
-from json import dumps, loads
 
 import plotly.io as pio
 import streamlit as st
@@ -13,8 +10,8 @@ import app.util.example_outputs_ui as example_outputs_ui
 import app.util.ui_components as ui_components
 import app.workflows.anonymize_case_data.config as config
 import app.workflows.anonymize_case_data.variables as ds_variables
-import toolkit.anonymize_case_data.queries as queries
 import toolkit.anonymize_case_data.visuals as visuals
+from app.util.session_store import load_store, store
 from toolkit.anonymize_case_data import AnonymizeCaseData, color_schemes
 
 
@@ -41,6 +38,15 @@ def create(sv: ds_variables.SessionVariables, workflow: None):
     with prepare_tab:
         uploader_col, model_col = st.columns([2, 1])
         with uploader_col:
+            if ui_components.load_session_container(workflow):
+                load_store(workflow)
+                acd.aggregate_error_report = sv.anonymize_sen_agg_rep.value
+                acd.synthetic_error_report = sv.anonymize_sen_syn_rep.value
+                acd.synthetic_df = sv.anonymize_synthetic_df.value
+                acd.aggregate_df = sv.anonymize_aggregate_df.value
+                acd.delta = sv.anonymize_delta.value
+                st.rerun()
+
             ui_components.single_csv_uploader(
                 workflow,
                 "Upload sensitive data CSV",
@@ -58,7 +64,6 @@ def create(sv: ds_variables.SessionVariables, workflow: None):
             )
 
             if len(sv.anonymize_sensitive_df.value) > 0:
-                
                 syn_stats = acd.analyze_synthesizability(sv.anonymize_sensitive_df.value)
 
                 st.markdown("### Synthesizability summary")
@@ -111,14 +116,19 @@ def create(sv: ds_variables.SessionVariables, workflow: None):
                         print("Anonymizing data...")
                         sv.anonymize_epsilon.value = epsilon
                         df = sv.anonymize_sensitive_df.value
+                        store(workflow)
                         with st.spinner("Anonymizing data..."):
                             acd.anonymize_case_data(
                                 df=df,
                                 epsilon=epsilon,
                             )
+                            sv.anonymize_sen_agg_rep.value = acd.aggregate_error_report
+                            sv.anonymize_sen_syn_rep.value = acd.synthetic_error_report
                             sv.anonymize_synthetic_df.value = acd.synthetic_df
                             sv.anonymize_aggregate_df.value = acd.aggregate_df
                             sv.anonymize_delta.value = f"{acd.delta:.2e}"
+                            store(workflow)
+                            st.rerun()
 
                 st.markdown(
                     "#### Analyze data",
@@ -341,6 +351,7 @@ def create(sv: ds_variables.SessionVariables, workflow: None):
                         chart_individual_configuration = st.session_state[
                             f"{workflow}_chart_individual_configuration"
                         ]
+
                         st.markdown("##### Configure top attributes chart")
                         show_attributes = st.multiselect(
                             "Types of top attributes to show",
@@ -531,6 +542,7 @@ def create(sv: ds_variables.SessionVariables, workflow: None):
                             st.session_state[
                                 f"{workflow}_chart_individual_configuration"
                             ] = chart_individual_configuration
+                            store(workflow)
                             st.rerun()  #     st.download_button('Chart PNG', data=pio.to_image(chart, format='png'), file_name='chart.png', mime='image/png', use_container_width=True)
 
             with c2:

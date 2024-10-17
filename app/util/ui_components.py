@@ -1,11 +1,9 @@
 # Copyright (c) 2024 Microsoft Corporation. All rights reserved.
 import json
-import math
 import os
 import random
 import re
 import sys
-from collections import defaultdict
 from typing import Any
 
 import numpy as np
@@ -17,6 +15,9 @@ from app.util.df_functions import get_current_time, quantize_datetime, quantize_
 from app.util.download_pdf import add_download_pdf
 from app.util.enums import Mode
 from app.util.openai_wrapper import UIOpenAIConfiguration
+from app.util.session_store import (
+    last_session_metadata,
+)
 from toolkit.AI.classes import LLMCallback
 from toolkit.AI.client import OpenAIClient
 from toolkit.AI.defaults import DEFAULT_MAX_INPUT_TOKENS
@@ -175,6 +176,26 @@ def generative_batch_ai_component(
 
 file_options = ["unicode-escape", "utf-8", "utf-8-sig"]
 file_encoding_default = "unicode-escape"
+
+def load_session_container(workflow):
+    last_metadata = last_session_metadata(workflow)
+    if len(last_metadata):
+        container = st.container(border=True)
+        with container:
+            s1, s2 = st.columns([0.9, 0.1])
+            if "timestamp" not in last_metadata:
+                last_metadata = ""
+            else:
+                last_metadata = f"({last_metadata['timestamp']})"
+            with s1:
+                st.markdown(f"Load last session data {last_metadata}")
+            with s2:
+                btn = st.button(
+                    "Load",
+                    use_container_width=True,
+                )
+        return btn
+    return None
 
 
 def single_csv_uploader(

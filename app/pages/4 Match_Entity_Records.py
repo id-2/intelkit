@@ -22,7 +22,7 @@ async def main():
         page_title="Intelligence Toolkit | Match Entity Records",
     )
     sv = rm_variables.SessionVariables(workflow)
-    load_multipage_app(sv)
+    load_multipage_app(sv, workflow)
 
     try:
         await app.workflows.match_entity_records.workflow.create(sv, workflow)

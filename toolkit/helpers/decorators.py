@@ -14,6 +14,9 @@ from toolkit.helpers.constants import (
 
 T = TypeVar("T")
 
+class ToolkitWorkflow:
+    pass
+
 
 def retry_with_backoff(
     retries=VECTOR_STORE_MAX_RETRIES,

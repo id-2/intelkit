@@ -20,7 +20,7 @@ def main() -> None:
         page_title="Intelligence Toolkit | Detect Case Patterns",
     )
     sv = ap_variables.SessionVariables(workflow)
-    load_multipage_app(sv)
+    load_multipage_app(sv, workflow)
 
     try:
         app.workflows.detect_case_patterns.workflow.create(sv, workflow)

@@ -9,6 +9,7 @@ import streamlit as st
 from app.util.session_variable import SessionVariable
 from toolkit.anonymize_case_data import AnonymizeCaseData
 
+
 class SessionVariables:
     prefix = None
 
@@ -27,9 +28,9 @@ class SessionVariables:
         self.anonymize_synthetic_df = SessionVariable(pd.DataFrame(), prefix)
         self.anonymize_aggregate_df = SessionVariable(pd.DataFrame(), prefix)
         self.anonymize_epsilon = SessionVariable(12.0, prefix)
-        # self.anonymize_sen_agg_rep = SessionVariable(pd.DataFrame(), prefix)
-        # self.anonymize_sen_syn_rep = SessionVariable(pd.DataFrame(), prefix)
-        
+        self.anonymize_sen_agg_rep = SessionVariable(pd.DataFrame(), prefix)
+        self.anonymize_sen_syn_rep = SessionVariable(pd.DataFrame(), prefix)
+
         self.anonymize_delta = SessionVariable(0.0, prefix)
         # self.anonymize_wide_sensitive_df = SessionVariable(pd.DataFrame(), prefix)
         # self.anonymize_min_count = SessionVariable(0, prefix)

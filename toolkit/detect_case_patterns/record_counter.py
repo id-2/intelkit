@@ -6,9 +6,10 @@ from collections import defaultdict
 import numpy as np
 
 from toolkit.helpers.constants import ATTRIBUTE_VALUE_SEPARATOR
+from toolkit.helpers.decorators import ToolkitWorkflow
 
 
-class RecordCounter:
+class RecordCounter(ToolkitWorkflow):
     def __init__(self, df):
         self.counter = 0
         self.df = df

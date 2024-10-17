@@ -24,7 +24,7 @@ async def main() -> None:
     )
     sv = rn_variables.SessionVariables(workflow)
 
-    load_multipage_app(sv)
+    load_multipage_app(sv, workflow)
 
     try:
         await app.workflows.detect_entity_networks.workflow.create(sv, workflow)

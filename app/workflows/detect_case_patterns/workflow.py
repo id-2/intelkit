@@ -16,10 +16,9 @@ from st_aggrid import (
 import app.util.example_outputs_ui as example_outputs_ui
 import app.workflows.detect_case_patterns.variables as ap_variables
 from app.util import ui_components
-from app.util.save_session_state import (
-    last_session_metadata,
-    load_session_state,
-    save_session_state,
+from app.util.session_store import (
+    load_store,
+    store,
 )
 from toolkit.AI.classes import LLMCallback
 from toolkit.detect_case_patterns import prompts
@@ -69,6 +68,9 @@ def create(sv: ap_variables.SessionVariables, workflow):
     with uploader_tab:
         uploader_col, model_col = st.columns([2, 1])
         with uploader_col:
+            if ui_components.load_session_container(workflow):
+                load_store(workflow)
+                st.rerun()
             ui_components.single_csv_uploader(
                 "detect_case_patterns",
                 "Upload CSV",
@@ -117,14 +119,7 @@ def create(sv: ap_variables.SessionVariables, workflow):
                     graph_df = sv.detect_case_patterns_final_df.value.copy(deep=True)
                     pdf = generate_graph_model(graph_df, time_col, type_val_sep)
                 sv.detect_case_patterns_dynamic_df.value = pdf
-                save_session_state(workflow)
-                st.rerun()
-
-            last_metadata = last_session_metadata(workflow)
-            if "timestamp" not in last_metadata:
-                last_metadata = {"timestamp": "not dated"}
-            if st.button(f"Load last session data ({last_metadata['timestamp']})"):
-                load_session_state(workflow)
+                store(workflow)
                 st.rerun()
 
             if ready and len(sv.detect_case_patterns_dynamic_df.value) > 0:
@@ -224,7 +219,7 @@ def create(sv: ap_variables.SessionVariables, workflow):
                         progress_bar.progress(99, text="Finalizing...")
                         sv.detect_case_patterns_time_series_df.value = tdf
                         progress_bar.empty()
-                        save_session_state(workflow)
+                        store(workflow)
                         st.rerun()
             with b4:
                 st.download_button(
@@ -245,6 +240,8 @@ def create(sv: ap_variables.SessionVariables, workflow):
                 st.success(
                     f"Over **{period_count}** periods, detected **{pattern_count}** attribute patterns (**{unique_count}** unique) from **{sv.detect_case_patterns_close_pairs.value}**/**{sv.detect_case_patterns_all_pairs.value}** converging attribute pairs (**{round(sv.detect_case_patterns_close_pairs.value / sv.detect_case_patterns_all_pairs.value * 100, 2) if sv.detect_case_patterns_all_pairs.value > 0 else 0}%**). Patterns ranked by ```overall_score = normalize(length * ln(count) * z_score * detections)```."
                 )
+                st.markdown("##### Select a pattern to continue")
+
                 show_df = sv.detect_case_patterns_pattern_df.value
 
                 gb = GridOptionsBuilder.from_dataframe(show_df)
@@ -392,7 +389,7 @@ def create(sv: ap_variables.SessionVariables, workflow):
                         )
 
                         sv.detect_case_patterns_report.value = result
-                        save_session_state(workflow)
+                        store(workflow)
                         st.rerun()
                     except Exception as _e:
                         empty_connection_bar()

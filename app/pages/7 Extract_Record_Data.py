@@ -4,8 +4,8 @@
 #
 import asyncio
 
-import streamlit as st
 import pandas as pd
+import streamlit as st
 from components.app_loader import load_multipage_app
 from util.helper_fn import app_in_dev_mode
 
@@ -22,7 +22,7 @@ async def main():
         page_title="Intelligence Toolkit | Extract Record Data",
     )
     sv = erd_variables.SessionVariables(workflow)
-    load_multipage_app(sv)
+    load_multipage_app(sv, workflow)
 
     try:
         await erd_workflow.create(sv, workflow)

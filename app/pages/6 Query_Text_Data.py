@@ -22,7 +22,7 @@ async def main():
         page_title="Intelligence Toolkit | Query Text Data",
     )
     sv = qa_variables.SessionVariables(workflow)
-    load_multipage_app(sv)
+    load_multipage_app(sv, workflow)
 
     try:
         await app.workflows.query_text_data.workflow.create(sv, workflow)

@@ -20,7 +20,7 @@ def main():
         page_title="Intelligence Toolkit | Compare Case Groups",
     )
     sv = gn_variables.SessionVariables(workflow)
-    load_multipage_app(sv)
+    load_multipage_app(sv, workflow)
 
     try:
         app.workflows.compare_case_groups.workflow.create(sv, workflow)
