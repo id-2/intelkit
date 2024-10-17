@@ -1,5 +1,6 @@
 import json
 import os
+import time
 
 import pandas as pd
 import polars as pl
@@ -67,9 +68,22 @@ def save_session_state(workflow, state_path: str = "state") -> None:
         return
     values_to_store = save_state(workflow, session_state)
     filename = f"{state_path}/{workflow}.json"
+    # get date and time
+    metadata = {"timestamp": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}
+    values_to_store["metadata"] = metadata
     with open(filename, "w") as f:
         json.dump(values_to_store, f)
     st.success(f"Session state saved to {filename}")
+
+
+def last_session_metadata(workflow):
+    filename = f"{state_path}/{workflow}.json"
+
+    with open(filename) as f:
+        state = json.load(f)
+        if "metadata" in state:
+            return state["metadata"]
+        return {}
 
 
 def load_session_state(workflow):
@@ -82,9 +96,9 @@ def load_session_state(workflow):
 
     with open(filename) as f:
         session_state = json.load(f)
+        session_state.pop("metadata", None)
         for key, value in session_state.items():
             if key in st.session_state:
-                print("key in", key)
                 del st.session_state[key]
             st.session_state[key] = value
 

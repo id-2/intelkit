@@ -17,6 +17,7 @@ import app.util.example_outputs_ui as example_outputs_ui
 import app.workflows.detect_case_patterns.variables as ap_variables
 from app.util import ui_components
 from app.util.save_session_state import (
+    last_session_metadata,
     load_session_state,
     save_session_state,
 )
@@ -118,7 +119,10 @@ def create(sv: ap_variables.SessionVariables, workflow):
                 save_session_state(workflow)
                 st.rerun()
 
-            if st.button("Load last state"):
+            last_metadata = last_session_metadata(workflow)
+            if "timestamp" not in last_metadata:
+                last_metadata = {"timestamp": "not dated"}
+            if st.button(f"Load last session data ({last_metadata['timestamp']})"):
                 load_session_state(workflow)
                 st.rerun()
 
