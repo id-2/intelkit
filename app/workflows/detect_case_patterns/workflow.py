@@ -51,6 +51,8 @@ def get_intro():
 
 
 def create(sv: ap_variables.SessionVariables, workflow):
+    ui_components.check_ai_configuration()
+
     intro_tab, uploader_tab, detect_tab, explain_tab, examples_tab = st.tabs(
         [
             "Detect Case Patterns workflow:",
@@ -73,7 +75,6 @@ def create(sv: ap_variables.SessionVariables, workflow):
                 sv.detect_case_patterns_last_file_name,
                 sv.detect_case_patterns_input_df,
                 sv.detect_case_patterns_final_df,
-                sv.detect_case_patterns_upload_key.value,
                 key="case_patterns_uploader",
                 height=500,
             )
@@ -133,7 +134,7 @@ def create(sv: ap_variables.SessionVariables, workflow):
 
     with detect_tab:
         if not ready or len(sv.detect_case_patterns_final_df.value) == 0:
-            st.warning("Generate a graph model to continue.")
+            st.warning("Generate an attribute model to continue.")
         else:
             b1, b2, b3, b4, _ = st.columns([1, 1, 1, 1, 2])
             with b1:
