@@ -14,11 +14,13 @@ state_path = "state"
 
 def store_df(key, value, path):
     filename = f"{path}/{key}.csv"
-    if isinstance(value, pd.DataFrame) and not value.empty:
-        value.to_csv(filename, index=False)
+    if isinstance(value, pd.DataFrame):
+        if not value.empty:
+            value.to_csv(filename, index=False)
         return True
-    if isinstance(value, pl.DataFrame) and not value.is_empty():
-        value.write_csv(filename)
+    if isinstance(value, pl.DataFrame):
+        if not value.is_empty():
+            value.write_csv(filename)
         return True
     return False
 
